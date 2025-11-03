@@ -1,0 +1,50 @@
+# Namnet på workflow:en som visas i GitHub Actions-fliken
+name: Basic workflow
+
+# Definierar vilka events som triggar pipelinen
+on:
+  # Triggas när kod pushas till repositoryt
+  push:
+    # Endast när man pushar till main-branchen
+    branches: [main]
+    # Endast när följande filer ändras:
+    paths:
+      - "**.js" # Alla JavaScript-filer i hela projektet
+      - "package*.json" # package.json och package-lock.json
+
+  # Triggas när en pull request skapas eller uppdateras
+  pull_request:
+    # Endast för pull requests mot main-branchen
+    branches: [main]
+    # Endast när följande filer ändras:
+    paths:
+      - "**.js" # Alla JavaScript-filer
+      - "package*.json" # package.json och package-lock.json
+
+# Definierar de jobb som ska köras
+jobs:
+  # Ett jobb med namnet "test"
+  test:
+    # Specificerar vilket operativsystem jobbet ska köras på
+    runs-on: ubuntu-latest
+
+    # Stegen som ska utföras i detta jobb (körs sekventiellt)
+    steps:
+      # Checkar ut repositoryts kod till runner-miljön
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Använder GitHubs officiella checkout-action v4
+
+      # Installerar och konfigurerar Node.js
+      - name: Setup node.js
+        uses: actions/setup-node@v4 # Använder GitHubs officiella Node.js setup-action v4
+        with:
+          node-version: "20" # Använder Node.js version 20
+          cache: "npm" # Cachar npm-dependencies för snabbare builds
+
+      # Installerar projektets dependencies
+      - name: Install dependencies
+        run: npm ci # npm ci ger en ren, reproducerbar installation baserad på package-lock.json
+
+      # Kör projektets tester
+      - name: Run tests
+        run: npm test # Kör test-scriptet definierat i package.json
